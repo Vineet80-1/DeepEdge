@@ -12,9 +12,18 @@ const handle = (promise) =>
     throw err;
   });
 
+export const getApiErrorMessage = (error, fallback = "Request failed") =>
+  error?.response?.data?.detail ||
+  error?.response?.data?.message ||
+  error?.message ||
+  fallback;
+
 export const getStats = () => handle(api.get("/stats"));
 export const getResources = () => handle(api.get("/resources"));
 export const getTraffic = () => handle(api.get("/traffic"));
 export const getThreats = () => handle(api.get("/threats"));
 export const getLogs = () => handle(api.get("/logs"));
 export const getAttackSummary = () => handle(api.get("/attacks/summary"));
+export const loginUser = (payload) => handle(api.post("/auth/login", payload));
+export const registerUser = (payload) =>
+  handle(api.post("/auth/register", payload));

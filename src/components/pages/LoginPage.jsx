@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getApiErrorMessage, loginUser } from "../../api/dashboardApi";
 
 export function LoginPage({ navigate, setAuthed }) {
   const [form, setForm] = useState({ user: "", pass: "" });
@@ -14,7 +15,7 @@ export function LoginPage({ navigate, setAuthed }) {
       { msg, type, id: Date.now() + Math.random() },
     ]);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!form.user || !form.pass) {
       setError("// ERROR: Credentials required");
       return;
@@ -25,27 +26,29 @@ export function LoginPage({ navigate, setAuthed }) {
     setProgress(0);
     setLogs([]);
 
-    const steps = [
-      [300, "Initiating secure handshake...", "info"],
-      [600, "Verifying identity token...", "info"],
-      [900, `Authenticating ${form.user}...`, "warn"],
-      [1200, "Checking access privileges...", "info"],
-      [1500, "Validating 2FA...", "info"],
-      [1800, "ACCESS GRANTED - Loading session", "ok"],
-    ];
+    addLog("Initiating secure handshake...", "info");
+    setProgress(20);
+    addLog(`Authenticating ${form.user}...`, "warn");
 
-    steps.forEach(([delay, msg, type]) =>
-      setTimeout(() => {
-        addLog(msg, type);
-        setProgress(Math.round((delay / 1800) * 100));
-      }, delay)
-    );
+    try {
+      const response = await loginUser({
+        user: form.user.trim(),
+        pass: form.pass,
+      });
 
-    setTimeout(() => {
+      addLog("Access granted. Loading session...", "ok");
+      setProgress(100);
+      localStorage.setItem("nexus-auth", "true");
+      localStorage.setItem("nexus-user", JSON.stringify(response?.user || null));
       setLoading(false);
       setAuthed(true);
       navigate("dashboard");
-    }, 2100);
+    } catch (err) {
+      addLog("Authentication failed", "err");
+      setLoading(false);
+      setProgress(0);
+      setError(`// ERROR: ${getApiErrorMessage(err, "Login failed")}`);
+    }
   };
 
   const logColors = {

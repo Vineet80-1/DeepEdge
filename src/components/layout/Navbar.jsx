@@ -72,9 +72,9 @@ export function Navbar({ page, navigate, authed, setAuthed, stats }) {
               key={n.id}
               onClick={() => {
                 if (!authed && n.id !== "dashboard" && n.id !== "analysis") {
-                  setPage("login");
+                  navigate("login");
                 } else {
-                  setPage(n.id);
+                  navigate(n.id);
                 }
               }}
               className={`nav-link ${page === n.id ? "active" : ""}`}
@@ -96,8 +96,10 @@ export function Navbar({ page, navigate, authed, setAuthed, stats }) {
           {authed && (
             <button
               onClick={() => {
+                localStorage.removeItem("nexus-auth");
+                localStorage.removeItem("nexus-user");
                 setAuthed(false);
-                setPage("login");
+                navigate("login");
               }}
               style={{
                 marginLeft: 8,

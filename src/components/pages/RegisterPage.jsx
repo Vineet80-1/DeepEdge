@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { calcStrength } from "../shared/Utils";
+import { getApiErrorMessage, registerUser } from "../../api/dashboardApi";
 
 export function RegisterPage({ navigate }) {
   const [form, setForm] = useState({
@@ -13,6 +14,7 @@ export function RegisterPage({ navigate }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [errors, setErrors] = useState({});
   const [strength, setStrength] = useState(0);
 
@@ -44,11 +46,28 @@ export function RegisterPage({ navigate }) {
 
   const handleRegister = () => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setDone(true);
-      setTimeout(() => navigate("login"), 1500);
-    }, 1800);
+    setErrors({});
+
+    registerUser({
+      user: form.user.trim(),
+      email: form.email.trim(),
+      pass: form.pass,
+      confirm: form.confirm,
+      code: form.code.trim(),
+      role: form.role,
+    })
+      .then((response) => {
+        setSuccessMessage(response?.message || "Registration successful");
+        setLoading(false);
+        setDone(true);
+        setTimeout(() => navigate("login"), 1500);
+      })
+      .catch((err) => {
+        setLoading(false);
+        setErrors({
+          submit: getApiErrorMessage(err, "Registration failed"),
+        });
+      });
   };
 
   const nextStep = () => {
@@ -108,6 +127,7 @@ export function RegisterPage({ navigate }) {
             }}
           >
             Your account has been created successfully.
+            {successMessage ? ` ${successMessage}` : ""}
             <br />
             Redirecting to login...
           </div>
@@ -426,7 +446,7 @@ export function RegisterPage({ navigate }) {
                   Select your role
                 </label>
 
-                {["admin"].map((role) => (
+                {["analyst", "admin"].map((role) => (
                   <label
                     key={role}
                     style={{
@@ -525,6 +545,21 @@ export function RegisterPage({ navigate }) {
               {step === 3 ? (loading ? "REGISTERING..." : "COMPLETE") : "NEXT"}
             </button>
           </div>
+
+          {errors.submit && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: "8px 10px",
+                fontSize: ".62rem",
+                color: "#ff003c",
+                background: "rgba(255,0,60,.07)",
+                border: "1px solid rgba(255,0,60,.25)",
+              }}
+            >
+              {errors.submit}
+            </div>
+          )}
 
           <div style={{ textAlign: "center", marginTop: 14 }}>
             <button

@@ -178,7 +178,9 @@ function PlaceholderPage({ title, copy }) {
 function App() {
   const [booting, setBooting] = useState(true);
   const [page, setPage] = useState(() => getPageFromLocation());
-  const [authed, setAuthed] = useState(false);
+  const [authed, setAuthed] = useState(
+    () => localStorage.getItem("nexus-auth") === "true"
+  );
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
@@ -261,8 +263,8 @@ function App() {
           />
 
           <main style={{ flex: 1, position: "relative", zIndex: 10 }}>
-            {/* {renderPage()} */}
-            <DashboardPage setStats={setStats} />
+            {renderPage()}
+            {/* <DashboardPage setStats={setStats} /> */}
           </main>
 
           <Footer />

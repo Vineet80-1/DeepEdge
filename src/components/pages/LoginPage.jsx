@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export function LoginPage({ setPage, setAuthed }) {
+export function LoginPage({ navigate, setAuthed }) {
   const [form, setForm] = useState({ user: "", pass: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -9,7 +9,10 @@ export function LoginPage({ setPage, setAuthed }) {
   const [showPass, setShowPass] = useState(false);
 
   const addLog = (msg, type = "info") =>
-    setLogs((l) => [...l.slice(-6), { msg, type, id: Date.now() + Math.random() }]);
+    setLogs((items) => [
+      ...items.slice(-6),
+      { msg, type, id: Date.now() + Math.random() },
+    ]);
 
   const handleLogin = () => {
     if (!form.user || !form.pass) {
@@ -28,23 +31,20 @@ export function LoginPage({ setPage, setAuthed }) {
       [900, `Authenticating ${form.user}...`, "warn"],
       [1200, "Checking access privileges...", "info"],
       [1500, "Validating 2FA...", "info"],
-      [1800, "ACCESS GRANTED — Loading session", "ok"],
+      [1800, "ACCESS GRANTED - Loading session", "ok"],
     ];
 
     steps.forEach(([delay, msg, type]) =>
-      setTimeout(
-        () => {
-          addLog(msg, type);
-          setProgress(Math.round((delay / 1800) * 100));
-        },
-        delay
-      )
+      setTimeout(() => {
+        addLog(msg, type);
+        setProgress(Math.round((delay / 1800) * 100));
+      }, delay)
     );
 
     setTimeout(() => {
       setLoading(false);
       setAuthed(true);
-      setPage("dashboard");
+      navigate("dashboard");
     }, 2100);
   };
 
@@ -68,7 +68,6 @@ export function LoginPage({ setPage, setAuthed }) {
       }}
     >
       <div style={{ width: "100%", maxWidth: 480 }}>
-        {/* Header */}
         <div className="fade-up" style={{ textAlign: "center", marginBottom: 32 }}>
           <div
             className="font-orb glitch"
@@ -76,8 +75,7 @@ export function LoginPage({ setPage, setAuthed }) {
               fontSize: "2.2rem",
               fontWeight: 900,
               color: "#00ff41",
-              textShadow:
-                "0 0 25px #00ff41, 0 0 50px rgba(0,255,65,.3)",
+              textShadow: "0 0 25px #00ff41, 0 0 50px rgba(0,255,65,.3)",
               letterSpacing: ".25em",
               marginBottom: 6,
             }}
@@ -104,9 +102,9 @@ export function LoginPage({ setPage, setAuthed }) {
               gap: 6,
             }}
           >
-            {["AES-256", "TLS 1.3", "ZERO-TRUST"].map((t) => (
+            {["AES-256", "TLS 1.3", "ZERO-TRUST"].map((token) => (
               <span
-                key={t}
+                key={token}
                 style={{
                   fontSize: ".52rem",
                   padding: "2px 8px",
@@ -115,23 +113,14 @@ export function LoginPage({ setPage, setAuthed }) {
                   letterSpacing: ".1em",
                 }}
               >
-                {t}
+                {token}
               </span>
             ))}
           </div>
         </div>
 
-        {/* Card */}
-        <div
-          className="panel-box fade-up-1"
-          style={{ padding: 28, borderRadius: 2 }}
-        >
-          {/* Corner Decorations */}
-          {[["top:0,left:0", "borderTop", "borderLeft"],
-            ["top:0,right:0", "borderTop", "borderRight"],
-            ["bottom:0,left:0", "borderBottom", "borderLeft"],
-            ["bottom:0,right:0", "borderBottom", "borderRight"],
-          ].map((_, i) => {
+        <div className="panel-box fade-up-1" style={{ padding: 28, borderRadius: 2 }}>
+          {[0, 1, 2, 3].map((i) => {
             const pos = [
               { top: 0, left: 0 },
               { top: 0, right: 0 },
@@ -187,11 +176,10 @@ export function LoginPage({ setPage, setAuthed }) {
               borderBottom: "1px solid rgba(0,255,65,.15)",
             }}
           >
-            <span style={{ color: "#00ff41" }}>■ </span>
+            <span style={{ color: "#00ff41" }}>* </span>
             OPERATOR LOGIN
           </div>
 
-          {/* Fields */}
           <div style={{ marginBottom: 16 }}>
             <label
               className="font-mono"
@@ -211,9 +199,7 @@ export function LoginPage({ setPage, setAuthed }) {
               type="text"
               placeholder="Enter operator ID..."
               value={form.user}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, user: e.target.value }))
-              }
+              onChange={(e) => setForm((current) => ({ ...current, user: e.target.value }))}
               style={{
                 width: "100%",
                 padding: "10px 14px",
@@ -244,9 +230,7 @@ export function LoginPage({ setPage, setAuthed }) {
                 type={showPass ? "text" : "password"}
                 placeholder="Enter access code..."
                 value={form.pass}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, pass: e.target.value }))
-                }
+                onChange={(e) => setForm((current) => ({ ...current, pass: e.target.value }))}
                 style={{
                   width: "100%",
                   padding: "10px 40px 10px 14px",
@@ -256,7 +240,7 @@ export function LoginPage({ setPage, setAuthed }) {
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
               <button
-                onClick={() => setShowPass((s) => !s)}
+                onClick={() => setShowPass((value) => !value)}
                 style={{
                   position: "absolute",
                   right: 10,
@@ -269,12 +253,11 @@ export function LoginPage({ setPage, setAuthed }) {
                   cursor: "crosshair",
                 }}
               >
-                {showPass ? "◉" : "◎"}
+                {showPass ? "SHOW" : "HIDE"}
               </button>
             </div>
           </div>
 
-          {/* Auth log */}
           {logs.length > 0 && (
             <div
               style={{
@@ -287,26 +270,23 @@ export function LoginPage({ setPage, setAuthed }) {
                 overflowY: "auto",
               }}
             >
-              {logs.map((l) => (
+              {logs.map((log) => (
                 <div
-                  key={l.id}
+                  key={log.id}
                   className="tag-animate font-mono"
                   style={{
                     fontSize: ".6rem",
-                    color: logColors[l.type],
+                    color: logColors[log.type],
                     marginBottom: 2,
                   }}
                 >
-                  <span style={{ color: "#00f5ff", marginRight: 4 }}>
-                    &gt;
-                  </span>
-                  {l.msg}
+                  <span style={{ color: "#00f5ff", marginRight: 4 }}>&gt;</span>
+                  {log.msg}
                 </div>
               ))}
             </div>
           )}
 
-          {/* Progress bar */}
           {loading && (
             <div style={{ marginBottom: 14 }}>
               <div
@@ -323,16 +303,13 @@ export function LoginPage({ setPage, setAuthed }) {
                     height: "100%",
                     background: "#00ff41",
                     boxShadow: "0 0 8px #00ff41",
-                    width: progress + "%",
+                    width: `${progress}%`,
                     transition: "width .3s ease",
                     position: "relative",
                     overflow: "hidden",
                   }}
                 >
-                  <div
-                    className="shimmer-bar"
-                    style={{ position: "absolute", inset: 0 }}
-                  />
+                  <div className="shimmer-bar" style={{ position: "absolute", inset: 0 }} />
                 </div>
               </div>
               <div
@@ -348,7 +325,6 @@ export function LoginPage({ setPage, setAuthed }) {
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <div
               style={{
@@ -377,7 +353,7 @@ export function LoginPage({ setPage, setAuthed }) {
               opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? "AUTHENTICATING..." : "▶ AUTHENTICATE"}
+            {loading ? "AUTHENTICATING..." : "AUTHENTICATE"}
           </button>
 
           <div
@@ -389,7 +365,7 @@ export function LoginPage({ setPage, setAuthed }) {
             }}
           >
             <button
-              onClick={() => setPage("register")}
+              onClick={() => navigate("register")}
               style={{
                 background: "none",
                 border: "none",
@@ -399,11 +375,9 @@ export function LoginPage({ setPage, setAuthed }) {
                 cursor: "crosshair",
               }}
               onMouseEnter={(e) => (e.target.style.color = "#00ff41")}
-              onMouseLeave={(e) =>
-                (e.target.style.color = "rgba(0,255,65,.5)")
-              }
+              onMouseLeave={(e) => (e.target.style.color = "rgba(0,255,65,.5)")}
             >
-              ⟶ REQUEST ACCESS
+              REQUEST ACCESS
             </button>
             <button
               style={{
@@ -415,45 +389,11 @@ export function LoginPage({ setPage, setAuthed }) {
                 cursor: "crosshair",
               }}
               onMouseEnter={(e) => (e.target.style.color = "#00f5ff")}
-              onMouseLeave={(e) =>
-                (e.target.style.color = "rgba(0,255,65,.5)")
-              }
+              onMouseLeave={(e) => (e.target.style.color = "rgba(0,255,65,.5)")}
             >
               RECOVER CREDENTIALS
             </button>
           </div>
-        </div>
-
-        {/* Bottom badges */}
-        <div
-          className="fade-up-2"
-          style={{
-            marginTop: 16,
-            display: "flex",
-            justifyContent: "center",
-            gap: 8,
-            flexWrap: "wrap",
-          }}
-        >
-          {[
-            ["🔒", "ENCRYPTED"],
-            ["🛡", "ZERO-TRUST"],
-            ["⚡", "2FA READY"],
-            ["🔑", "PKI AUTH"],
-          ].map(([i, l]) => (
-            <div
-              key={l}
-              style={{
-                fontSize: ".55rem",
-                padding: "3px 10px",
-                border: "1px solid rgba(0,255,65,.15)",
-                color: "rgba(0,255,65,.4)",
-                letterSpacing: ".08em",
-              }}
-            >
-              {i} {l}
-            </div>
-          ))}
         </div>
       </div>
     </div>

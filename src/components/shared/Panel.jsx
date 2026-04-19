@@ -6,6 +6,8 @@ export function Panel({ title, children, className = "", style = {} }) {
         background: "rgba(0,18,4,0.88)",
         border: "1px solid rgba(0,255,65,.22)",
         borderRadius: 2,
+        padding: 14,
+        borderRadius: 6,
         animation: "border-glow 4s ease infinite",
         ...style,
       }}

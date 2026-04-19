@@ -1,120 +1,138 @@
-import { Panel } from "../shared/Panel";
+import { useEffect } from "react";
+import { useDashboardData } from "../../hooks/useDashboardData";
+
 import { StatBox } from "../shared/StatBox";
+import { Panel } from "../shared/Panel";
 import { ProgBar } from "../shared/ProgBar";
 import { TrafficChart } from "../charts/TrafficChart";
 import { BarChart } from "../charts/BarChart";
-import { WorldMap } from "../charts/WorldMap";
 
-export function DashboardPage() {
-  const trafficData1 = [
-    20, 35,  28, 42, 55, 48, 62, 71, 65, 52, 58, 75, 82, 68, 45,
-    55, 72, 84, 76, 60, 68, 79, 88, 92, 78, 65,
-  ];
-  const trafficData2 = [
-    25, 38, 32, 38, 52, 60, 75, 68, 55, 45, 63, 70, 79, 75, 58,
-    48, 65, 78, 88, 72, 60, 74, 81, 86, 70, 62,
-  ];
+export function DashboardPage({ setStats }) {
+  const { data, loading, error } = useDashboardData();
+  const stats = data?.stats || {};
+
+  useEffect(() => {
+    if (setStats) setStats(stats);
+  }, [stats, setStats]);
+
+  if (loading) return <div style={{ color: "#00ff41" }}>Loading...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (!data) return <div>No data available</div>;
+
+  const resources = data.resources || {};
+  const traffic = data.traffic || {};
+  const threats = data.threats || {};
+  const logs = data?.logs || [];
 
   return (
-    <div
-      style={{
-        padding: "24px 20px",
-        maxWidth: "1400px",
-        margin: "0 auto",
-        minHeight: "calc(100vh - 260px)",
-      }}
-    >
-      {/* Top Stats Row */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          gap: "12px",
-          marginBottom: "20px",
-        }}
-      >
-        <StatBox value="3" label="THREATS" color="#ff003c" />
-        <StatBox value="847" label="EVENTS" color="#00f5ff" />
-        <StatBox value="99.8" label="UPTIME" color="#00ff41" suffix="%" />
-        <StatBox value="24" label="ALERTS" color="#ffe600" />
+    <div style={{ padding: 20, maxWidth: 1400, margin: "0 auto" }}>
+
+      {/* STATS */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+        gap: 12,
+        marginBottom: 20
+      }}>
+        <StatBox value={stats.threats || 0} label="THREATS" />
+        <StatBox value={stats.events || 0} label="EVENTS" />
+        <StatBox value={stats.alerts || 0} label="ALERTS" />
+        <StatBox value={stats.risk_score || 0} label="RISK" />
       </div>
 
-      {/* Main Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "16px",
-          marginBottom: "20px",
-        }}
-      >
-        {/* Traffic Chart */}
-        <Panel title="Network Traffic" className="animate-fade-up">
-          <TrafficChart data1={trafficData1} data2={trafficData2} />
+      {/* CHARTS */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+        gap: 16,
+        marginBottom: 20
+      }}>
+        <Panel title="Network Traffic">
+          <TrafficChart
+            data1={traffic.inbound || []}
+            data2={traffic.outbound || []}
+          />
         </Panel>
 
-        {/* Threats by Type */}
-        <Panel title="Threats By Type" className="animate-fade-up">
-          <BarChart />
+        <Panel title="Threat Types">
+          <BarChart data={threats || {}} />
         </Panel>
       </div>
 
-      {/* World Map */}
-      <Panel
-        title="Global Attack Map"
-        className="animate-fade-up"
-        style={{ marginBottom: "20px" }}
-      >
-        <WorldMap />
-      </Panel>
+      {/* LOWER SECTION */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+        gap: 16
+      }}>
 
-      {/* System Status Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "16px",
-        }}
-      >
-        {/* CPU Status */}
+        <Panel title="Logs">
+          <div style={{ maxHeight: 150, overflowY: "auto" }}>
+            {logs.length === 0 ? "No logs" :
+              logs.slice(0, 20).map((log, i) => (
+                <div key={i}>
+                  [{log.timestamp}] {log.source_ip} → {log.status}
+                </div>
+              ))
+            }
+          </div>
+        </Panel>
+
+        <Panel title="Top Attack Sources">
+          {(threats.top_attack_sources || []).map((s, i) => (
+            <div key={i}>
+              {s.label} ({s.value})
+            </div>
+          ))}
+        </Panel>
+
+        <Panel title="Protocols">
+          {traffic.protocol_counts
+            ? Object.entries(traffic.protocol_counts).map(([k, v]) => (
+              <div key={k}>{k}: {v}</div>
+            ))
+            : "No protocol data"}
+        </Panel>
+
+
+
+
         <Panel title="Processor">
-          <ProgBar label="CORE-1" value={68} color="#00f5ff" />
-          <ProgBar label="CORE-2" value={52} color="#00f5ff" />
-          <ProgBar label="CORE-3" value={76} color="#00f5ff" />
-          <ProgBar label="CORE-4" value={45} color="#00f5ff" />
+          {(resources.cpu || []).map((v, i) => (
+            <ProgBar
+              key={i}
+              label={`CORE-${i + 1}`}
+              value={v}
+              color="#00f5ff"
+            />
+          ))}
         </Panel>
 
-        {/* Memory */}
         <Panel title="Memory">
-          <ProgBar label="DDR4 #1" value={72} color="#00ff41" />
-          <ProgBar label="DDR4 #2" value={58} color="#00ff41" />
-          <ProgBar label="DDR4 #3" value={81} color="#00ff41" />
-          <ProgBar label="STACK" value={38} color="#00ff41" />
+          {(resources.memory || []).map((v, i) => (
+            <ProgBar
+              key={i}
+              label={`MEM-${i + 1}`}
+              value={v}
+              color="#00ff41"
+            />
+          ))}
         </Panel>
 
-        {/* Network IO */}
         <Panel title="Network I/O">
           <ProgBar
-            label="ETH0 RX"
-            value={64}
+            label="INBOUND"
+            value={resources.network?.inbound_current || 0}
             color="#ff8c00"
           />
           <ProgBar
-            label="ETH0 TX"
-            value={52}
-            color="#ff8c00"
-          />
-          <ProgBar
-            label="ETH1 RX"
-            value={41}
-            color="#ff8c00"
-          />
-          <ProgBar
-            label="ETH1 TX"
-            value={76}
+            label="OUTBOUND"
+            value={resources.network?.outbound_current || 0}
             color="#ff8c00"
           />
         </Panel>
+
+
       </div>
     </div>
   );

@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard" },
+  { id: "threats", label: "Threats" },
+  { id: "network", label: "Network" },
+  { id: "packets", label: "Packets" },
+  { id: "history", label: "History" },
+  { id: "logs", label: "Logs" },
   { id: "analysis", label: "File Analysis" },
-  { id: "login", label: "Login" },
-  { id: "register", label: "Register" },
 ];
 
-export function Navbar({ page, setPage, authed, setAuthed }) {
+export function Navbar({ page, navigate, authed, setAuthed, stats }) {
   const [clock, setClock] = useState(new Date().toTimeString().slice(0, 8));
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -25,12 +28,11 @@ export function Navbar({ page, setPage, authed, setAuthed }) {
       style={{
         background: "rgba(0,6,0,.97)",
         borderBottom: "1px solid rgba(0,255,65,.18)",
-        position: "sticky",
+        position: "relative",
         top: 0,
         zIndex: 50,
       }}
     >
-      {/* Top Bar */}
       <div
         style={{
           display: "flex",
@@ -41,9 +43,8 @@ export function Navbar({ page, setPage, authed, setAuthed }) {
           gap: 8,
         }}
       >
-        {/* Logo */}
         <button
-          onClick={() => setPage("dashboard")}
+          onClick={() => navigate("dashboard")}
           style={{ background: "none", border: "none", padding: 0 }}
         >
           <span
@@ -62,7 +63,6 @@ export function Navbar({ page, setPage, authed, setAuthed }) {
           </span>
         </button>
 
-        {/* Desktop Links */}
         <div
           style={{ display: "flex", gap: 2, alignItems: "center" }}
           className="hidden-mobile"
@@ -70,7 +70,13 @@ export function Navbar({ page, setPage, authed, setAuthed }) {
           {NAV_ITEMS.map((n) => (
             <button
               key={n.id}
-              onClick={() => setPage(n.id)}
+              onClick={() => {
+                if (!authed && n.id !== "dashboard" && n.id !== "analysis") {
+                  setPage("login");
+                } else {
+                  setPage(n.id);
+                }
+              }}
               className={`nav-link ${page === n.id ? "active" : ""}`}
               style={{
                 background: "none",
@@ -109,14 +115,26 @@ export function Navbar({ page, setPage, authed, setAuthed }) {
           )}
         </div>
 
-        {/* Right Section */}
+
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: 12,
           }}
+        ><button
+          className="mobile-only"
+          onClick={() => setMobileOpen((open) => !open)}
+          style={{
+            background: "none",
+            border: "1px solid rgba(0,255,65,.3)",
+            color: "#00ff41",
+            padding: "4px 10px",
+            fontSize: "12px",
+          }}
         >
+            MENU
+          </button>
           <div
             style={{
               display: "flex",
@@ -127,7 +145,7 @@ export function Navbar({ page, setPage, authed, setAuthed }) {
           >
             {[
               { c: "#00ff41", l: "SECURE" },
-              { c: "#ff003c", l: "3 ALERTS", d: ".5s" },
+              { c: "#ff003c", l: `${stats?.alerts || 0} ALERTS`, d: ".5s" },
               { c: "#00f5ff", l: "ONLINE", d: "1s" },
             ].map(({ c, l, d = "0s" }) => (
               <span
@@ -173,13 +191,54 @@ export function Navbar({ page, setPage, authed, setAuthed }) {
                 letterSpacing: ".1em",
               }}
             >
-              ● AUTH
+              AUTH
             </span>
           )}
         </div>
       </div>
 
-      {/* Sub Navigation Bar */}
+      {mobileOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            width: "100%",
+            background: "rgba(0,10,0,.98)",
+            borderTop: "1px solid rgba(0,255,65,.2)",
+            zIndex: 100,
+            boxShadow: "0 10px 20px rgba(0,0,0,.6)",
+          }}
+        >
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                if (!authed && item.id !== "dashboard" && item.id !== "analysis") {
+                  navigate("login");
+                } else {
+                  navigate(item.id);
+                }
+                setMobileOpen(false);
+              }}
+              style={{
+                width: "100%",
+                padding: "12px 20px",
+                textAlign: "left",
+                background: "none",
+                border: "none",
+                borderBottom: "1px solid rgba(0,255,65,.08)",
+                color: page === item.id ? "#00ff41" : "rgba(0,255,65,.7)",
+                fontSize: "13px",
+                letterSpacing: ".12em",
+              }}
+            >
+              {item.label.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div
         style={{
           borderTop: "1px solid rgba(0,255,65,.1)",
@@ -191,30 +250,7 @@ export function Navbar({ page, setPage, authed, setAuthed }) {
           gap: 4,
         }}
       >
-        <div style={{ display: "flex" }}>
-          {NAV_ITEMS.map((n) => (
-            <button
-              key={n.id}
-              onClick={() => setPage(n.id)}
-              className={`nav-link ${page === n.id ? "active" : ""}`}
-              style={{
-                background:
-                  page === n.id ? "rgba(0,255,65,.07)" : "none",
-                border: "none",
-                borderBottom:
-                  page === n.id
-                    ? "2px solid #00ff41"
-                    : "2px solid transparent",
-                padding: "7px 16px",
-                fontSize: ".6rem",
-                letterSpacing: ".18em",
-                fontFamily: "'Share Tech Mono',monospace",
-              }}
-            >
-              {n.label.toUpperCase()}
-            </button>
-          ))}
-        </div>
+        <div style={{ display: "flex" }} />
         <div
           style={{
             fontSize: ".58rem",

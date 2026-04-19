@@ -57,6 +57,25 @@ function GlobalStyles() {
       .nav-link:hover,.nav-link.active{color:#00ff41}
       .nav-link.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:#00ff41;box-shadow:0 0 6px #00ff41}
       .tag-animate{animation:fadeUp .3s ease both}
+      /* Hide on mobile */
+.hidden-mobile {
+  display: flex;
+}
+
+/* Hide on desktop */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
+}
     `;
     document.head.appendChild(s);
     return () => {

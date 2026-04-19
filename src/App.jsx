@@ -1,22 +1,20 @@
-﻿import { useState, useEffect, useRef } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 
-// Shared Components
 import GlobalStyles from "./components/shared/GlobalStyles";
 import { MatrixRain } from "./components/shared/MatrixRain";
 import { Scanlines } from "./components/shared/Scanlines";
 
-// Layout Components
 import { Navbar } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
 
-// Page Components
 import { LoginPage } from "./components/pages/LoginPage";
 import { RegisterPage } from "./components/pages/RegisterPage";
 import { DashboardPage } from "./components/pages/DashboardPage";
+import { ThreatsPage } from "./components/pages/ThreatsPage";
+import { NetworkPage } from "./components/pages/NetworkPage";
+import { PacketsPage } from "./components/pages/PacketsPage";
+import { HistoryPage } from "./components/pages/HistoryPage";
 
-/* ══════════════════════════════════════════════
-   BOOT SCREEN
-═══════════════════════════════════════════════ */
 const BOOT_LINES = [
   "Initializing kernel modules...",
   "Loading threat intelligence DB v4.2.1",
@@ -30,9 +28,38 @@ const BOOT_LINES = [
   "Starting deep packet inspection engine",
   "Initializing SIEM correlation engine",
   "Connecting to NEXUS command relay",
-  "Verifying 64 endpoint nodes — all nominal",
-  "ALL SYSTEMS OPERATIONAL — LAUNCHING OPS CENTER",
+  "Verifying 64 endpoint nodes - all nominal",
+  "ALL SYSTEMS OPERATIONAL - LAUNCHING OPS CENTER",
 ];
+
+const PAGE_PATHS = {
+  login: "/login",
+  register: "/register",
+  dashboard: "/dashboard",
+  threats: "/threats",
+  network: "/network",
+  packets: "/packets",
+  history: "/history",
+  logs: "/logs",
+  analysis: "/analysis",
+};
+
+const PATH_PAGES = Object.fromEntries(
+  Object.entries(PAGE_PATHS).map(([page, path]) => [path, page])
+);
+
+const PROTECTED_PAGES = new Set([
+  "dashboard",
+  "threats",
+  "network",
+  "packets",
+  "history",
+  "logs",
+]);
+
+function getPageFromLocation() {
+  return PATH_PAGES[window.location.pathname] || "login";
+}
 
 function BootScreen({ onDone }) {
   const [lines, setLines] = useState([]);
@@ -50,24 +77,34 @@ function BootScreen({ onDone }) {
         return;
       }
 
-      setLines((l) => [...l, BOOT_LINES[idx.current]]);
+      setLines((current) => [...current, BOOT_LINES[idx.current]]);
       setPct(Math.round(((idx.current + 1) / BOOT_LINES.length) * 100));
-      idx.current++;
+      idx.current += 1;
       setTimeout(next, 90 + Math.random() * 120);
     };
 
-    const t = setTimeout(next, 350);
-    return () => clearTimeout(t);
+    const timeoutId = setTimeout(next, 350);
+    return () => clearTimeout(timeoutId);
   }, [onDone]);
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 font-mono"
       style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "16px",
         background: "#000",
-        transition: "opacity .6s",
+        zIndex: 9999,
+        overflow: "hidden",
         opacity: done ? 0 : 1,
-        pointerEvents: done ? "none" : "all",
+        transition: "opacity .4s ease",
       }}
     >
       <div
@@ -83,10 +120,7 @@ function BootScreen({ onDone }) {
         SEC
       </div>
 
-      <div
-        className="text-xs tracking-[.25em]"
-        style={{ color: "rgba(0,255,65,.5)" }}
-      >
+      <div className="text-xs tracking-[.25em]" style={{ color: "rgba(0,255,65,.5)" }}>
         CYBER OPERATIONS CENTER v4.2.1
       </div>
 
@@ -94,10 +128,10 @@ function BootScreen({ onDone }) {
         className="w-[min(560px,90vw)] h-44 overflow-hidden text-xs"
         style={{ color: "#00cc33" }}
       >
-        {lines.map((l, i) => (
+        {lines.map((line, i) => (
           <div key={i} className="py-[2px]">
             <span style={{ color: "#00f5ff" }}>&gt; </span>
-            {l}
+            {line}
           </div>
         ))}
       </div>
@@ -109,7 +143,7 @@ function BootScreen({ onDone }) {
         <div
           className="h-full transition-all duration-75"
           style={{
-            width: pct + "%",
+            width: `${pct}%`,
             background: "#00ff41",
             boxShadow: "0 0 10px #00ff41",
           }}
@@ -123,18 +157,81 @@ function BootScreen({ onDone }) {
   );
 }
 
-/* ══════════════════════════════════════════════
-   MAIN APP
-═══════════════════════════════════════════════ */
+function PlaceholderPage({ title, copy }) {
+  return (
+    <div style={{ padding: 20 }}>
+      <div
+        className="font-orb"
+        style={{
+          color: "#00ff41",
+          letterSpacing: ".18em",
+          marginBottom: 10,
+        }}
+      >
+        {title}
+      </div>
+      <div style={{ color: "rgba(0,255,65,.65)" }}>{copy}</div>
+    </div>
+  );
+}
+
 function App() {
   const [booting, setBooting] = useState(true);
-  const [page, setPage] = useState("dashboard");
+  const [page, setPage] = useState(() => getPageFromLocation());
   const [authed, setAuthed] = useState(false);
+  const [stats, setStats] = useState(null);
 
-  const handleBootDone = () => {
-    setBooting(false);
-    setPage("login");
-    setAuthed(false);
+  useEffect(() => {
+    const syncRoute = () => setPage(getPageFromLocation());
+    window.addEventListener("popstate", syncRoute);
+    return () => window.removeEventListener("popstate", syncRoute);
+  }, []);
+
+  const navigate = (nextPage, { replace = false } = {}) => {
+    const path = PAGE_PATHS[nextPage] || PAGE_PATHS.login;
+    const method = replace ? "replaceState" : "pushState";
+    window.history[method]({}, "", path);
+    setPage(nextPage);
+  };
+
+  useEffect(() => {
+    if (!authed && PROTECTED_PAGES.has(page)) {
+      navigate("login", { replace: true });
+    }
+  }, [authed, page]);
+
+  const renderPage = () => {
+    switch (page) {
+      case "register":
+        return <RegisterPage navigate={navigate} />;
+      case "dashboard":
+        return <DashboardPage setStats={setStats} />;
+      case "threats":
+        return <ThreatsPage />;
+      case "network":
+        return <NetworkPage />;
+      case "packets":
+        return <PacketsPage />;
+      case "history":
+        return <HistoryPage />;
+      case "logs":
+        return (
+          <PlaceholderPage
+            title="SYSTEM LOGS"
+            copy="This route is active and ready for a dedicated log viewer."
+          />
+        );
+      case "analysis":
+        return (
+          <PlaceholderPage
+            title="FILE ANALYSIS"
+            copy="This route is active and ready to be connected to your upload workflow."
+          />
+        );
+      case "login":
+      default:
+        return <LoginPage navigate={navigate} setAuthed={setAuthed} />;
+    }
   };
 
   return (
@@ -143,9 +240,9 @@ function App() {
       <MatrixRain opacity={0.06} />
       <Scanlines />
 
-      {booting ? (
-        <BootScreen onDone={handleBootDone} />
-      ) : (
+      {booting && <BootScreen onDone={() => setBooting(false)} />}
+
+      {!booting && (
         <div
           style={{
             display: "flex",
@@ -155,16 +252,17 @@ function App() {
               "radial-gradient(circle at top, rgba(0,255,65,.04), transparent 30%), linear-gradient(180deg, rgba(0,20,5,.95), rgba(0,5,0,1))",
           }}
         >
-          <Navbar page={page} setPage={setPage} authed={authed} setAuthed={setAuthed} />
+          <Navbar
+            page={page}
+            navigate={navigate}
+            authed={authed}
+            setAuthed={setAuthed}
+            stats={stats}
+          />
 
           <main style={{ flex: 1, position: "relative", zIndex: 10 }}>
-            {!authed && page === "login" && (
-              <LoginPage setPage={setPage} setAuthed={setAuthed} />
-            )}
-            {!authed && page === "register" && (
-              <RegisterPage setPage={setPage} />
-            )}
-            {authed && <DashboardPage />}
+            {/* {renderPage()} */}
+            <DashboardPage setStats={setStats} />
           </main>
 
           <Footer />

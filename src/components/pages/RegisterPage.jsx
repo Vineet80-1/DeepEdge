@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { calcStrength } from "../shared/Utils";
 
-export function RegisterPage({ setPage }) {
+export function RegisterPage({ navigate }) {
   const [form, setForm] = useState({
     user: "",
     email: "",
@@ -24,32 +24,31 @@ export function RegisterPage({ setPage }) {
     "#00ff41",
     "#00f5ff",
   ];
-  const strengthLabels = [
-    "",
-    "WEAK",
-    "WEAK",
-    "FAIR",
-    "STRONG",
-    "MAXIMUM",
-  ];
+  const strengthLabels = ["", "WEAK", "WEAK", "FAIR", "STRONG", "MAXIMUM"];
 
   const validate1 = () => {
-    const e = {};
-    if (!form.user || form.user.length < 3)
-      e.user = "Min 3 characters required";
-    if (!form.email || !form.email.includes("@"))
-      e.email = "Valid email required";
-    setErrors(e);
-    return Object.keys(e).length === 0;
+    const nextErrors = {};
+    if (!form.user || form.user.length < 3) nextErrors.user = "Min 3 characters required";
+    if (!form.email || !form.email.includes("@")) nextErrors.email = "Valid email required";
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
   const validate2 = () => {
-    const e = {};
-    if (strength < 2) e.pass = "Password too weak";
-    if (form.pass !== form.confirm)
-      e.confirm = "Passwords do not match";
-    setErrors(e);
-    return Object.keys(e).length === 0;
+    const nextErrors = {};
+    if (strength < 2) nextErrors.pass = "Password too weak";
+    if (form.pass !== form.confirm) nextErrors.confirm = "Passwords do not match";
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleRegister = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setDone(true);
+      setTimeout(() => navigate("login"), 1500);
+    }, 1800);
   };
 
   const nextStep = () => {
@@ -59,17 +58,8 @@ export function RegisterPage({ setPage }) {
       handleRegister();
       return;
     }
-    setStep((s) => s + 1);
+    setStep((value) => value + 1);
     setErrors({});
-  };
-
-  const handleRegister = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setDone(true);
-      setTimeout(() => setPage("login"), 1500);
-    }, 1800);
   };
 
   if (done) {
@@ -96,7 +86,7 @@ export function RegisterPage({ setPage }) {
               animation: "pulse-border 2s ease infinite",
             }}
           >
-            ✓
+            OK
           </div>
           <div
             className="font-orb glitch"
@@ -139,14 +129,7 @@ export function RegisterPage({ setPage }) {
       }}
     >
       <div style={{ width: "100%", maxWidth: 500 }}>
-        {/* Header */}
-        <div
-          className="fade-up"
-          style={{
-            textAlign: "center",
-            marginBottom: 32,
-          }}
-        >
+        <div className="fade-up" style={{ textAlign: "center", marginBottom: 32 }}>
           <div
             className="font-orb glitch"
             style={{
@@ -169,7 +152,7 @@ export function RegisterPage({ setPage }) {
               color: "rgba(0,255,65,.5)",
             }}
           >
-            OPERATOR REGISTRATION — STEP {step}/3
+            OPERATOR REGISTRATION - STEP {step}/3
           </div>
           <div
             style={{
@@ -184,7 +167,7 @@ export function RegisterPage({ setPage }) {
               style={{
                 height: "100%",
                 background: "#00ff41",
-                width: (step / 3) * 100 + "%",
+                width: `${(step / 3) * 100}%`,
                 boxShadow: "0 0 10px #00ff41",
                 transition: "width .4s ease",
               }}
@@ -192,12 +175,7 @@ export function RegisterPage({ setPage }) {
           </div>
         </div>
 
-        {/* Card */}
-        <div
-          className="panel-box fade-up-1"
-          style={{ padding: 28, position: "relative", minHeight: 300 }}
-        >
-          {/* Step 1: Account Info */}
+        <div className="panel-box fade-up-1" style={{ padding: 28, position: "relative", minHeight: 300 }}>
           {step === 1 && (
             <>
               <div
@@ -211,7 +189,7 @@ export function RegisterPage({ setPage }) {
                   borderBottom: "1px solid rgba(0,255,65,.15)",
                 }}
               >
-                <span style={{ color: "#00ff41" }}>■ </span>
+                <span style={{ color: "#00ff41" }}>* </span>
                 ACCOUNT CREDENTIALS
               </div>
 
@@ -234,12 +212,7 @@ export function RegisterPage({ setPage }) {
                   type="text"
                   placeholder="Choose username..."
                   value={form.user}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      user: e.target.value,
-                    }))
-                  }
+                  onChange={(e) => setForm((current) => ({ ...current, user: e.target.value }))}
                   style={{
                     width: "100%",
                     padding: "10px 14px",
@@ -248,13 +221,7 @@ export function RegisterPage({ setPage }) {
                   }}
                 />
                 {errors.user && (
-                  <div
-                    style={{
-                      fontSize: ".6rem",
-                      color: "#ff003c",
-                      marginTop: 4,
-                    }}
-                  >
+                  <div style={{ fontSize: ".6rem", color: "#ff003c", marginTop: 4 }}>
                     {errors.user}
                   </div>
                 )}
@@ -279,12 +246,7 @@ export function RegisterPage({ setPage }) {
                   type="email"
                   placeholder="operator@nexus.sec..."
                   value={form.email}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      email: e.target.value,
-                    }))
-                  }
+                  onChange={(e) => setForm((current) => ({ ...current, email: e.target.value }))}
                   style={{
                     width: "100%",
                     padding: "10px 14px",
@@ -293,13 +255,7 @@ export function RegisterPage({ setPage }) {
                   }}
                 />
                 {errors.email && (
-                  <div
-                    style={{
-                      fontSize: ".6rem",
-                      color: "#ff003c",
-                      marginTop: 4,
-                    }}
-                  >
+                  <div style={{ fontSize: ".6rem", color: "#ff003c", marginTop: 4 }}>
                     {errors.email}
                   </div>
                 )}
@@ -307,7 +263,6 @@ export function RegisterPage({ setPage }) {
             </>
           )}
 
-          {/* Step 2: Password */}
           {step === 2 && (
             <>
               <div
@@ -321,7 +276,7 @@ export function RegisterPage({ setPage }) {
                   borderBottom: "1px solid rgba(0,255,65,.15)",
                 }}
               >
-                <span style={{ color: "#00ff41" }}>■ </span>
+                <span style={{ color: "#00ff41" }}>* </span>
                 SECURITY CONFIGURATION
               </div>
 
@@ -345,9 +300,9 @@ export function RegisterPage({ setPage }) {
                   placeholder="Min 8 characters..."
                   value={form.pass}
                   onChange={(e) => {
-                    const p = e.target.value;
-                    setForm((f) => ({ ...f, pass: p }));
-                    setStrength(calcStrength(p));
+                    const password = e.target.value;
+                    setForm((current) => ({ ...current, pass: password }));
+                    setStrength(calcStrength(password));
                   }}
                   style={{
                     width: "100%",
@@ -373,15 +328,8 @@ export function RegisterPage({ setPage }) {
                       marginBottom: 4,
                     }}
                   >
-                    <span style={{ color: "rgba(0,255,65,.5)" }}>
-                      STRENGTH:
-                    </span>
-                    <span
-                      style={{
-                        color: strengthColors[strength],
-                        fontWeight: 700,
-                      }}
-                    >
+                    <span style={{ color: "rgba(0,255,65,.5)" }}>STRENGTH:</span>
+                    <span style={{ color: strengthColors[strength], fontWeight: 700 }}>
                       {strengthLabels[strength]}
                     </span>
                   </div>
@@ -397,20 +345,14 @@ export function RegisterPage({ setPage }) {
                       style={{
                         height: "100%",
                         background: strengthColors[strength],
-                        width: (strength / 5) * 100 + "%",
+                        width: `${(strength / 5) * 100}%`,
                         transition: "all .3s",
                       }}
                     />
                   </div>
                 </div>
                 {errors.pass && (
-                  <div
-                    style={{
-                      fontSize: ".6rem",
-                      color: "#ff003c",
-                      marginTop: 4,
-                    }}
-                  >
+                  <div style={{ fontSize: ".6rem", color: "#ff003c", marginTop: 4 }}>
                     {errors.pass}
                   </div>
                 )}
@@ -435,12 +377,7 @@ export function RegisterPage({ setPage }) {
                   type="password"
                   placeholder="Re-enter password..."
                   value={form.confirm}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      confirm: e.target.value,
-                    }))
-                  }
+                  onChange={(e) => setForm((current) => ({ ...current, confirm: e.target.value }))}
                   style={{
                     width: "100%",
                     padding: "10px 14px",
@@ -449,13 +386,7 @@ export function RegisterPage({ setPage }) {
                   }}
                 />
                 {errors.confirm && (
-                  <div
-                    style={{
-                      fontSize: ".6rem",
-                      color: "#ff003c",
-                      marginTop: 4,
-                    }}
-                  >
+                  <div style={{ fontSize: ".6rem", color: "#ff003c", marginTop: 4 }}>
                     {errors.confirm}
                   </div>
                 )}
@@ -463,7 +394,6 @@ export function RegisterPage({ setPage }) {
             </>
           )}
 
-          {/* Step 3: Role Selection */}
           {step === 3 && (
             <>
               <div
@@ -477,7 +407,7 @@ export function RegisterPage({ setPage }) {
                   borderBottom: "1px solid rgba(0,255,65,.15)",
                 }}
               >
-                <span style={{ color: "#00ff41" }}>■ </span>
+                <span style={{ color: "#00ff41" }}>* </span>
                 ROLE ASSIGNMENT
               </div>
 
@@ -492,26 +422,24 @@ export function RegisterPage({ setPage }) {
                     marginBottom: 12,
                   }}
                 >
-                  <span style={{ color: "#00f5ff" }}>■</span>
+                  <span style={{ color: "#00f5ff" }}>*</span>
                   Select your role
                 </label>
 
-                {["analyst", "operator", "admin"].map((r) => (
+                {["analyst", "operator", "admin"].map((role) => (
                   <label
-                    key={r}
+                    key={role}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       padding: "10px 12px",
                       marginBottom: 8,
                       border:
-                        form.role === r
+                        form.role === role
                           ? "1px solid rgba(0,255,65,.6)"
                           : "1px solid rgba(0,255,65,.15)",
                       background:
-                        form.role === r
-                          ? "rgba(0,255,65,.08)"
-                          : "transparent",
+                        form.role === role ? "rgba(0,255,65,.08)" : "transparent",
                       borderRadius: 2,
                       cursor: "crosshair",
                       transition: "all .2s",
@@ -520,29 +448,21 @@ export function RegisterPage({ setPage }) {
                     <input
                       type="radio"
                       name="role"
-                      value={r}
-                      checked={form.role === r}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          role: e.target.value,
-                        }))
-                      }
+                      value={role}
+                      checked={form.role === role}
+                      onChange={(e) => setForm((current) => ({ ...current, role: e.target.value }))}
                       style={{ cursor: "crosshair", marginRight: 10 }}
                     />
                     <span
                       className="font-mono"
                       style={{
                         fontSize: ".65rem",
-                        color:
-                          form.role === r
-                            ? "#00ff41"
-                            : "rgba(0,255,65,.5)",
+                        color: form.role === role ? "#00ff41" : "rgba(0,255,65,.5)",
                         textTransform: "uppercase",
                         letterSpacing: ".1em",
                       }}
                     >
-                      {r}
+                      {role}
                     </span>
                   </label>
                 ))}
@@ -570,18 +490,11 @@ export function RegisterPage({ setPage }) {
             </>
           )}
 
-          {/* Navigation Buttons */}
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              marginTop: 24,
-            }}
-          >
+          <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
             {step > 1 && (
               <button
                 onClick={() => {
-                  setStep((s) => s - 1);
+                  setStep((value) => value - 1);
                   setErrors({});
                 }}
                 disabled={loading}
@@ -594,7 +507,7 @@ export function RegisterPage({ setPage }) {
                   opacity: loading ? 0.5 : 1,
                 }}
               >
-                ⟨ PREVIOUS
+                PREVIOUS
               </button>
             )}
             <button
@@ -609,18 +522,13 @@ export function RegisterPage({ setPage }) {
                 opacity: loading ? 0.5 : 1,
               }}
             >
-              {step === 3
-                ? loading
-                  ? "REGISTERING..."
-                  : "▶ COMPLETE"
-                : "NEXT ⟩"}
+              {step === 3 ? (loading ? "REGISTERING..." : "COMPLETE") : "NEXT"}
             </button>
           </div>
 
-          {/* Back to Login */}
           <div style={{ textAlign: "center", marginTop: 14 }}>
             <button
-              onClick={() => setPage("login")}
+              onClick={() => navigate("login")}
               style={{
                 background: "none",
                 border: "none",
@@ -630,14 +538,10 @@ export function RegisterPage({ setPage }) {
                 letterSpacing: ".08em",
                 cursor: "crosshair",
               }}
-              onMouseEnter={(e) =>
-                (e.target.style.color = "#00f5ff")
-              }
-              onMouseLeave={(e) =>
-                (e.target.style.color = "rgba(0,255,65,.5)")
-              }
+              onMouseEnter={(e) => (e.target.style.color = "#00f5ff")}
+              onMouseLeave={(e) => (e.target.style.color = "rgba(0,255,65,.5)")}
             >
-              ← BACK TO LOGIN
+              BACK TO LOGIN
             </button>
           </div>
         </div>

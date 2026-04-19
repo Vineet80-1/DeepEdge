@@ -426,7 +426,7 @@ export function RegisterPage({ navigate }) {
                   Select your role
                 </label>
 
-                {["analyst", "operator", "admin"].map((role) => (
+                {["admin"].map((role) => (
                   <label
                     key={role}
                     style={{

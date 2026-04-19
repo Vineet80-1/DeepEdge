@@ -17,3 +17,4 @@ export const getResources = () => handle(api.get("/resources"));
 export const getTraffic = () => handle(api.get("/traffic"));
 export const getThreats = () => handle(api.get("/threats"));
 export const getLogs = () => handle(api.get("/logs"));
+export const getAttackSummary = () => handle(api.get("/attacks/summary"));

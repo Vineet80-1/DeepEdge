@@ -105,7 +105,7 @@ export function LoginPage({ navigate, setAuthed }) {
               gap: 6,
             }}
           >
-            {["AES-256", "TLS 1.3", "ZERO-TRUST"].map((token) => (
+            {["AES-256", "TLS 1.3", "FULL-TRUST"].map((token) => (
               <span
                 key={token}
                 style={{

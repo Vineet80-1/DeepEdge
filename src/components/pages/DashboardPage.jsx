@@ -9,10 +9,12 @@ import { BarChart } from "../charts/BarChart";
 
 export function DashboardPage({ setStats }) {
   const { data, loading, error } = useDashboardData();
-  const stats = data?.stats || {};
+  const stats = data?.stats ?? null;
 
   useEffect(() => {
-    if (setStats) setStats(stats);
+    if (setStats && stats) {
+      setStats(stats);
+    }
   }, [stats, setStats]);
 
   if (loading) return <div style={{ color: "#00ff41" }}>Loading...</div>;
@@ -59,10 +61,10 @@ export function DashboardPage({ setStats }) {
           marginBottom: 20,
         }}
       >
-        <StatBox value={stats.threats || 0} label="THREATS" />
-        <StatBox value={stats.events || 0} label="EVENTS" />
-        <StatBox value={stats.alerts || 0} label="ALERTS" />
-        <StatBox value={stats.risk_score || 0} label="RISK" />
+        <StatBox value={stats?.threats || 0} label="THREATS" />
+        <StatBox value={stats?.events || 0} label="EVENTS" />
+        <StatBox value={stats?.alerts || 0} label="ALERTS" />
+        <StatBox value={stats?.risk_score || 0} label="RISK" />
       </div>
 
       <div

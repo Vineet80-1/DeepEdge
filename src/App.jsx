@@ -14,6 +14,8 @@ import { ThreatsPage } from "./components/pages/ThreatsPage";
 import { NetworkPage } from "./components/pages/NetworkPage";
 import { PacketsPage } from "./components/pages/PacketsPage";
 import { HistoryPage } from "./components/pages/HistoryPage";
+import { LogsPage } from "./components/pages/LogsPage";
+import { AnalysisPage } from "./components/pages/AnalysisPage";
 
 const BOOT_LINES = [
   "Initializing kernel modules...",
@@ -217,19 +219,9 @@ function App() {
       case "history":
         return <HistoryPage />;
       case "logs":
-        return (
-          <PlaceholderPage
-            title="SYSTEM LOGS"
-            copy="This route is active and ready for a dedicated log viewer."
-          />
-        );
+        return <LogsPage />;
       case "analysis":
-        return (
-          <PlaceholderPage
-            title="FILE ANALYSIS"
-            copy="This route is active and ready to be connected to your upload workflow."
-          />
-        );
+        return <AnalysisPage />;
       case "login":
       default:
         return <LoginPage navigate={navigate} setAuthed={setAuthed} />;

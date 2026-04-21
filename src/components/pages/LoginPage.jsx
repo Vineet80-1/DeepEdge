@@ -195,12 +195,12 @@ export function LoginPage({ navigate, setAuthed }) {
               }}
             >
               <span style={{ color: "#00f5ff" }}>[01]</span>
-              OPERATOR ID
+              OPERATOR NAME
             </label>
             <input
               className="input-cyber font-mono"
               type="text"
-              placeholder="Enter operator ID..."
+              placeholder="Enter operator Name..."
               value={form.user}
               onChange={(e) => setForm((current) => ({ ...current, user: e.target.value }))}
               style={{
